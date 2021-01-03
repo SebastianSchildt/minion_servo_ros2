@@ -1,6 +1,8 @@
 # minion_servo_ros2
 
-A simple ROS2 module for servos using pigpio hw assisted PWM.
+A simple ROS2 module for servos using pigpio hw assisted PWM. It uses the [pigpiod](http://abyz.me.uk/rpi/pigpio/pigpiod.html) library. Before ROS2 nodes run succesfully you need to make sure that the `pgpiod` daemon is running.
+
+Using pigpiod also implies **using BCM port numbers and ot wiringPi**, i.e. find the GPIO your servo is connected to at https://pinout.xyz/ and use the "GPIO/BCM" pin nimber
 
 
 
@@ -24,10 +26,15 @@ Run with
 ros2 run  minion_servo  minion_servo 
 ```
 
-Or using launch file
+Or using launch file, preconfigured for  [Yahboom G1](https://www.yahboom.net/study/G1-T-PI)
 
 ```
- ros2 launch minion_ultrasonic minion_ultrasonic_launch.py
+ros2 launch minion_servo minion_servo_launch.py
 ```
 
-Launch file can be used to set Pins (wiringPi numbers). Default config works for [Yahboom G1](https://www.yahboom.net/study/G1-T-PI) foward ultrasonic sensor.
+
+Test it via
+
+```
+ros2 service call /set_degree minion_servo/srv/SetServo '{"degree": 20}'
+```

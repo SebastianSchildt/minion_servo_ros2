@@ -26,23 +26,28 @@ using namespace std::chrono_literals;
 
 ServoService::ServoService() : Node("minion_servo_server")
   {
-    //publisher_ = this->create_publisher<sensor_msgs::msg::Range>("ultrasonic_range", 10);
     this->declare_parameter<int>("servo_pin", 23);
+    this->declare_parameter<std::string>("servo_service", "/example_servo");
+
     
     this->get_parameter("servo_pin", this->_servo_pin);
+    this->get_parameter("servo_service", this->_service_name);
+
     RCLCPP_INFO(this->get_logger(), "Using server pin %i", this->_servo_pin);
     servo=new Servo(_servo_pin);
 
-    rclcpp::Service<SetServo>::SharedPtr service = this->create_service<SetServo>("set_degree", std::bind(&ServoService::set_servo,this, std::placeholders::_1, std::placeholders::_2));
+    this->service = this->create_service<SetServo>(_service_name, std::bind(&ServoService::set_servo,this, std::placeholders::_1, std::placeholders::_2));
 
+   
+    RCLCPP_INFO(this->get_logger(), "Ready for action on service %s", _service_name.c_str() );
   }
 
 void ServoService::set_servo(const std::shared_ptr<SetServo::Request> request,
           std::shared_ptr<SetServo::Response>      response)
 {
   response->ok = true;
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Incoming request\na: %ld",       request->degree);
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sending back response: [%d]", (long int)response->ok);
+  this->servo->setDeg(request->degree);
+  RCLCPP_DEBUG(this->get_logger(), "Setting servo to: %ld",  request->degree);
 }
 
 int main(int argc, char * argv[])
