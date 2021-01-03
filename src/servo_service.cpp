@@ -20,20 +20,30 @@
 #include "servo_service.hpp"
 
 
+
 using namespace std::chrono_literals;
 
 
-ServoService::ServoService() : Node("minion_ultrasonic")
+ServoService::ServoService() : Node("minion_servo_server")
   {
     //publisher_ = this->create_publisher<sensor_msgs::msg::Range>("ultrasonic_range", 10);
     this->declare_parameter<int>("servo_pin", 23);
     
     this->get_parameter("servo_pin", this->_servo_pin);
     RCLCPP_INFO(this->get_logger(), "Using server pin %i", this->_servo_pin);
-
     servo=new Servo(_servo_pin);
+
+    rclcpp::Service<SetServo>::SharedPtr service = this->create_service<SetServo>("set_degree", std::bind(&ServoService::set_servo,this, std::placeholders::_1, std::placeholders::_2));
+
   }
 
+void ServoService::set_servo(const std::shared_ptr<SetServo::Request> request,
+          std::shared_ptr<SetServo::Response>      response)
+{
+  response->ok = true;
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Incoming request\na: %ld",       request->degree);
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sending back response: [%d]", (long int)response->ok);
+}
 
 int main(int argc, char * argv[])
 {
